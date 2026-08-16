@@ -1,0 +1,1 @@
+La imagen activa del sitio es img/trucks/flotilla.jpg.
