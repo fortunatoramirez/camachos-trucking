@@ -152,7 +152,7 @@ textarea {
   color: white;
   background:
     linear-gradient(120deg, rgba(11,16,22,.93), rgba(11,16,22,.52)),
-    url("../img/trucks/flotilla.jpg?v=3") center/cover no-repeat;
+    url("../img/trucks/flotilla.png") center/cover no-repeat;
   background-color: #1b222a;
 }
 
