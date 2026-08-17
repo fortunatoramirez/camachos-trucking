@@ -69,7 +69,7 @@ const translations = {
     form_cargo: "Tipo de carga",
     form_message: "Mensaje",
     form_submit: "Enviar solicitud",
-    form_note: "Formulario de demostración. Después lo conectaremos al correo empresarial.",
+    form_note: "Completa el formulario y enviaremos tu solicitud a nuestro equipo de cotizaciones.",
 
     hosting_eyebrow: "Sitio web y hosting",
     hosting_title: "Tu página se publicará con dominio propio y hosting gratuito.",
@@ -167,7 +167,7 @@ const translations = {
     form_cargo: "Freight type",
     form_message: "Message",
     form_submit: "Send Request",
-    form_note: "Demo form. We will connect it to the company email later.",
+    form_note: "Complete the form and we will send your request to our quotes team.",
 
     hosting_eyebrow: "Website and hosting",
     hosting_title: "Your website will be published with a custom domain and free hosting.",
@@ -236,17 +236,54 @@ mainNav.querySelectorAll("a").forEach((link) => {
   });
 });
 
-quoteForm.addEventListener("submit", (event) => {
+quoteForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const lang = document.documentElement.lang || "es";
+  const submitButton = quoteForm.querySelector('button[type="submit"]');
+  const originalButtonText = submitButton.textContent;
 
+  submitButton.disabled = true;
+  submitButton.textContent = lang === "es" ? "Enviando..." : "Sending...";
   formNote.textContent =
     lang === "es"
-      ? "Solicitud recibida en modo demostración. En el siguiente paso conectaremos este formulario."
-      : "Request received in demo mode. In the next step, we will connect this form.";
+      ? "Enviando tu solicitud..."
+      : "Sending your request...";
 
-  quoteForm.reset();
+  const formData = new FormData(quoteForm);
+  const payload = Object.fromEntries(formData.entries());
+
+  try {
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "Request failed");
+    }
+
+    formNote.textContent =
+      lang === "es"
+        ? "¡Solicitud enviada! Nuestro equipo se pondrá en contacto contigo."
+        : "Request sent! Our team will contact you shortly.";
+
+    quoteForm.reset();
+  } catch (error) {
+    console.error("Quote form error", error);
+    formNote.textContent =
+      lang === "es"
+        ? "No pudimos enviar la solicitud. Por favor intenta nuevamente o contáctanos por correo."
+        : "We could not send your request. Please try again or contact us by email.";
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalButtonText;
+  }
 });
 
 const savedLanguage = localStorage.getItem("camachos-language") || "es";
